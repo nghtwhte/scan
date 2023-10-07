@@ -1,0 +1,56 @@
+using System;
+using Microsoft.Kinect;
+
+class Program
+{
+    static void Main()
+    {
+        // Initialize Kinect sensor
+        KinectSensor kinectSensor = KinectSensor.GetDefault();
+        if (kinectSensor == null)
+        {
+            Console.WriteLine("No Kinect sensor found.");
+            return;
+        }
+
+        // Open the sensor
+        kinectSensor.Open();
+
+        // Create a depth frame reader
+        using (DepthFrameReader depthFrameReader = kinectSensor.DepthFrameSource.OpenReader())
+        {
+            // Subscribe to the FrameArrived event
+            depthFrameReader.FrameArrived += DepthFrameReader_FrameArrived;
+
+            Console.WriteLine("Press any key to exit.");
+            Console.ReadKey();
+
+            // Close the sensor when done
+            kinectSensor.Close();
+        }
+    }
+
+    private static void DepthFrameReader_FrameArrived(object sender, DepthFrameArrivedEventArgs e)
+    {
+        using (DepthFrame depthFrame = e.FrameReference.AcquireFrame())
+        {
+            if (depthFrame == null)
+            {
+                return;
+            }
+
+            // Get the depth data
+            ushort[] depthData = new ushort[depthFrame.FrameDescription.LengthInPixels];
+            depthFrame.CopyFrameDataToArray(depthData);
+
+            // Process and use the depth data here
+            // You can convert depth data to 3D points or use it as needed
+
+            // For example, you can print the depth value at a specific pixel
+            int x = 320; // Replace with your desired pixel coordinates
+            int y = 240;
+            int depthValue = depthData[y * depthFrame.FrameDescription.Width + x];
+            Console.WriteLine($"Depth value at ({x}, {y}): {depthValue} mm");
+        }
+    }
+}
